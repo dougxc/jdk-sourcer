@@ -33,7 +33,7 @@ elif [ $# -eq 1 ]; then
     unzip -q jdk-${jdk_tag}.zip "jdk-${jdk_tag}/src/*"
     jdk_root=${PWD}/jdk-${jdk_tag}
 else
-    echo "Usage: $0 <JDK workspace> <zipfile>"
+    echo "Usage: $0 <path to JDK repo> <path to zipfile>"
     echo "   or: $0 <JDK tag>"
     exit 1;
 fi

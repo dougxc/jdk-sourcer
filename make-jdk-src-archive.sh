@@ -23,7 +23,14 @@ elif [ $# -eq 1 ]; then
     url=http://hg.openjdk.java.net/jdk/jdk/archive/${jdk_tag}.zip/src/
     if [ ! -e jdk-${jdk_tag}.zip ]; then
         echo "Downloading $url"
-        wget -O jdk-${jdk_tag}.zip $url
+        if type -p curl >/dev/null ; then
+            curl -o jdk-${jdk_tag}.zip $url
+        elif type -p wget >/dev/null ; then
+            wget -O jdk-${jdk_tag}.zip $url
+        else
+            "Neither wget nor curl are available"
+            exit 1
+        fi
     fi
     if [ -e jdk-${jdk_tag} ]; then
         echo "Removing jdk-${jdk_tag} ..."
@@ -56,19 +63,26 @@ else
 fi
 
 for classes_dir in $dirs; do
-    echo "Adding sources from $classes_dir to $src_zip ..."
+    echo "Adding sources from $classes_dir ..."
     pushd $classes_dir >/dev/null
     zip -r -q -u $src_zip . -i \*.java -x \*SCCS\*
     popd >/dev/null
 done
 popd >/dev/null
 
-if type -p shasum >/dev/null ; then
-    shasum ${src_zip} | awk '{print $1}' > ${src_zip}.sha1
-else
-    sha1sum ${src_zip} | awk '{print $1}' > ${src_zip}.sha1
+if [ $# -eq 1 ]; then
+    echo "Removing jdk-${jdk_tag} ..."
+    rm -rf jdk-${jdk_tag}
 fi
 
-if [ $# -eq 1 ]; then
-    rm -rf jdk-${jdk_tag}
+echo "Created ${src_zip}"
+
+if type -p shasum >/dev/null ; then
+    shasum ${src_zip} | awk '{print $1}' > ${src_zip}.sha1
+    echo "Created ${src_zip}.sha1"
+elif type -p sha1sum >/dev/null ; then
+    sha1sum ${src_zip} | awk '{print $1}' > ${src_zip}.sha1
+    echo "Created ${src_zip}.sha1"
+else
+    echo "Neither sha1sum not shasum is available - skipping generation of ${src_zip}.sha1"
 fi

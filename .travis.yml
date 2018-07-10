@@ -1,0 +1,28 @@
+sudo: required
+dist: trusty
+
+env:
+  - JDK_TAG=jdk-11+20
+script:
+  # Only run build for a pull request or when pushing a tagged commit to master
+  - |
+      if [ "${TRAVIS_PULL_REQUEST}" != "false" -o "${TRAVIS_BRANCH}" == "${TRAVIS_TAG}" ]
+      then
+        ./make-jdk-src-archive.sh ${JDK_TAG}
+        ls -l
+      fi
+
+# See https://docs.travis-ci.com/user/deployment/releases
+before_deploy:
+  - echo "SRC_ZIP=${SRC_ZIP}"
+deploy:
+  provider: releases
+  api_key:
+    secure: Sz53hEQspb5PdroCmSe6WhqjFPGJmnJ6GwCuZlIB8rk+5rTVCd+zCopPh6UmxCTWEUfpUJRyDGmqbhwwHGfmm8r4hHrmUXkL8SzO1SEm8QWTiWerkNkk+/YyCylZGWRvDmyOOaS04HsrVAPIYKKyxUlKDIGKXlD4adtBpXWpOywgDv6nqPUREnzhDg4Xbff5L6jDaTCLxVHgY5HCIwxaiQEChpnGmvgJ1ZoeRpMjd/TPM+sU03Qa6aAPpL1GY1liGZkTPIWExznIPmjGHQbDXJ3NB173c+LRyzlmN5xE462U0Kwm0yT62k/OX8hyOIBoF6st9cvMxf6k8Xy5tP+o1/z9112ZnXe2d2F7bRqOiGaOm//+OJBGUChNuBH8fvHbQ58lWSfCbNEu3QibwJ+DihZhk9v3CpTqmu+gt92npTOmC7zqE8su4Blw1WkUaQ2pxGM5sk/xxaA/b73agB4Rc1aAXN+gsN+sr8Q0IMmDoiMyQLwOY5zTyBF8dpZ1SPLbhB4NeywY1K1VUpkkYKp3wTUtSgoTYEYzV05BJ13+21s0RSIgzMnSrpIPZEgRL46EWvWD0tLimh0irHEhuCJomYY0lGKGlwPRO3ABqFfsFIb+GRgrbBLzkKQ6CpC7JYo7jwfnms24qONP1DHb7V1ErYR79p7hi2Dp9yd8sX/P2ZQ=
+  file:
+     - ${SRC_ZIP}
+     - ${SRC_ZIP}.sha1
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: dougxc/jdk-sourcer

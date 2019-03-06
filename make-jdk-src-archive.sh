@@ -62,13 +62,10 @@ else
     exit 1
 fi
 
-for classes_dir in $dirs; do
-    echo "Adding sources from $classes_dir ..."
-    pushd $classes_dir >/dev/null
-    zip -r -q -u $src_zip . -i \*.java -x \*SCCS\*
-    popd >/dev/null
-done
-popd >/dev/null
+source="${BASH_SOURCE[0]}"
+while [ -h "$source" ] ; do source="$(readlink "$source")"; done
+DIR="$( cd -P "$( dirname "$source" )" && pwd )"
+python ${DIR}/archive.py $src_zip $dirs
 
 if [ $# -eq 1 ]; then
     echo "Removing jdk-${jdk_tag} ..."

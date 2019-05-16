@@ -3,8 +3,6 @@
 # Utility for creating a src.zip from *all* the Java source files in a JDK workspace.
 #
 
-#set -x
-
 if [ $# -eq 2 ]; then
     archive_dir=$(dirname $2)
     mkdir -p $archive_dir || { echo "Could not create $archive_dir"; exit 1; }
@@ -21,35 +19,39 @@ elif [ $# -eq 1 ]; then
     jdk_tag=$1
     src_zip=${PWD}/${jdk_tag}.src.zip
     url=http://hg.openjdk.java.net/jdk/jdk/archive/${jdk_tag}.zip/src/
-    if [ ! -e jdk-${jdk_tag}.zip ]; then
+    if [ ! -e downloaded-${jdk_tag}.zip ]; then
         echo "Downloading $url"
         if type -p curl >/dev/null ; then
-            curl -o jdk-${jdk_tag}.zip $url
+            curl -o downloaded-${jdk_tag}.zip $url
         elif type -p wget >/dev/null ; then
-            wget -O jdk-${jdk_tag}.zip $url
+            wget -O downloaded-${jdk_tag}.zip $url
         else
             "Neither wget nor curl are available"
             exit 1
         fi
     fi
-    if [ -e jdk-${jdk_tag} ]; then
-        echo "Removing jdk-${jdk_tag} ..."
-        rm -rf jdk-${jdk_tag}
+    if [ -e downloaded-${jdk_tag} ]; then
+        echo "Removing downloaded-${jdk_tag} ..."
+        rm -rf downloaded-${jdk_tag}
     fi
-    echo "Unzipping jdk-${jdk_tag}.zip ..."
-    unzip -q jdk-${jdk_tag}.zip "jdk-${jdk_tag}/src/*"
+    echo "Unzipping downloaded-${jdk_tag}.zip ..."
+    unzip -q downloaded-${jdk_tag}.zip "jdk-${jdk_tag}/src/*"
     jdk_root=${PWD}/jdk-${jdk_tag}
 else
     echo "Usage: $0 <path to JDK repo> <path to zipfile>"
-    echo "   or: $0 <JDK tag>"
+    echo "   or: $0 <tag at http://hg.openjdk.java.net/jdk/jdk>"
+    echo ""
+    echo "Examples:"
+    echo "  $0 ~/jdk-jdk/open jdk-snapshot.src.zip"
+    echo "  $0 jdk-13+21"
     exit 1;
 fi
 
-pushd $jdk_root >/dev/null
 dirs=""
-if [ -d src/jdk.internal.vm.ci ]; then
+src_root=$jdk_root/src
+if [ -d $src_root/jdk.internal.vm.ci ]; then
     # JDK >= 10
-    for d in $(find src -name classes -a -type d); do
+    for d in $(find $src_root -name classes -a -type d); do
         alt_layout_dirs=$(ls -d $d/*/src 2>/dev/null)
         if [ -n "$alt_layout_dirs" ]; then
             dirs="$dirs $alt_layout_dirs"
@@ -65,7 +67,7 @@ fi
 source="${BASH_SOURCE[0]}"
 while [ -h "$source" ] ; do source="$(readlink "$source")"; done
 DIR="$( cd -P "$( dirname "$source" )" && pwd )"
-python ${DIR}/archive.py $src_zip $dirs
+python ${DIR}/archive.py $src_zip $src_root $dirs
 
 if [ $# -eq 1 ]; then
     echo "Removing jdk-${jdk_tag} ..."

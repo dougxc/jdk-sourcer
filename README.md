@@ -26,3 +26,6 @@ The above will create a file named `jdk-11+20.src.zip`.
 
 [jdk-11+20.src.zip](https://github.com/dougxc/jdk-sourcer/releases/download/jdk-11%2B20/jdk-11+20.src.zip.sha1)
 [jdk-11+20.src.zip.sha1](https://github.com/dougxc/jdk-sourcer/releases/download/jdk-11%2B20/jdk-11+20.src.zip.sha1)
+
+[jdk-13+21.src.zip](https://github.com/dougxc/jdk-sourcer/releases/download/jdk-13%2B21/jdk-13+21.src.zip.sha1)
+[jdk-13+21.src.zip.sha1](https://github.com/dougxc/jdk-sourcer/releases/download/jdk-13%2B21/jdk-13+21.src.zip.sha1)

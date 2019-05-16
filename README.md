@@ -21,3 +21,8 @@ For example:
 ```
 
 The above will create a file named `jdk-11+20.src.zip`.
+
+## Prebuilt Source Archives
+
+[jdk-11+20.src.zip](https://github.com/dougxc/jdk-sourcer/releases/download/jdk-11%2B20/jdk-11+20.src.zip.sha1)
+[jdk-11+20.src.zip.sha1](https://github.com/dougxc/jdk-sourcer/releases/download/jdk-11%2B20/jdk-11+20.src.zip.sha1)

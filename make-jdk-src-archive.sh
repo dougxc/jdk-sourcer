@@ -18,7 +18,7 @@ if [ $# -eq 2 ]; then
 elif [ $# -eq 1 ]; then
     jdk_tag=$1
     src_zip=${PWD}/${jdk_tag}.src.zip
-    url=http://hg.openjdk.java.net/jdk/jdk/archive/${jdk_tag}.zip/src/
+    url=http://hg.openjdk.java.net/jdk/jdk${JDK_VERSION}/archive/${jdk_tag}.zip/src/
     if [ ! -e downloaded-${jdk_tag}.zip ]; then
         echo "Downloading $url"
         if type -p curl >/dev/null ; then
@@ -35,15 +35,16 @@ elif [ $# -eq 1 ]; then
         rm -rf downloaded-${jdk_tag}
     fi
     echo "Unzipping downloaded-${jdk_tag}.zip ..."
-    unzip -q downloaded-${jdk_tag}.zip "jdk-${jdk_tag}/src/*"
-    jdk_root=${PWD}/jdk-${jdk_tag}
+    unzip -q downloaded-${jdk_tag}.zip "jdk${JDK_VERSION}-${jdk_tag}/src/*"
+    jdk_root=${PWD}/jdk${JDK_VERSION}-${jdk_tag}
 else
     echo "Usage: $0 <path to JDK repo> <path to zipfile>"
-    echo "   or: $0 <tag at http://hg.openjdk.java.net/jdk/jdk>"
+    echo "   or: $0 <tag at http://hg.openjdk.java.net/jdk/jdk\${JDK_VERSION}>"
     echo ""
     echo "Examples:"
     echo "  $0 ~/jdk-jdk/open jdk-snapshot.src.zip"
     echo "  $0 jdk-13+21"
+    echo "  env JDK_VERSION=13 $0 jdk-13+25"
     exit 1;
 fi
 

@@ -42,6 +42,7 @@ else
     echo "   or: $0 <tag at http://hg.openjdk.java.net/jdk/jdk\${JDK_VERSION}>"
     echo ""
     echo "Examples:"
+    echo "  $0 ~/closed/jdk8u251 jdk8u251.src.zip"
     echo "  $0 ~/jdk-jdk/open jdk-snapshot.src.zip"
     echo "  $0 jdk-13+21"
     echo "  env JDK_VERSION=13 $0 jdk-13+25"
@@ -60,15 +61,19 @@ if [ -d $src_root/jdk.internal.vm.ci ]; then
             dirs="$dirs $d"
         fi
     done
+    archive_py=archive.py
+    archive_py_args="$src_zip $src_root $dirs"
 else
-    echo "Unsupported/unknown JDK layout"
-    exit 1
+    # JDK < 9
+    dirs=$(find $jdk_root -maxdepth 6 -name classes -a -type d)
+    archive_py=archive8.py
+    archive_py_args="$src_zip $dirs"
 fi
 
 source="${BASH_SOURCE[0]}"
 while [ -h "$source" ] ; do source="$(readlink "$source")"; done
 DIR="$( cd -P "$( dirname "$source" )" && pwd )"
-python ${DIR}/archive.py $src_zip $src_root $dirs
+python ${DIR}/${archive_py} ${archive_py_args}
 
 if [ $# -eq 1 ]; then
     echo "Removing jdk-${jdk_tag} ..."

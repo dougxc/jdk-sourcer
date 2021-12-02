@@ -3,6 +3,7 @@
 # Utility for creating a src.zip from *all* the Java source files in a JDK workspace.
 #
 
+#set -x
 if [ $# -eq 2 ]; then
     archive_dir=$(dirname $2)
     mkdir -p $archive_dir || { echo "Could not create $archive_dir"; exit 1; }
@@ -18,34 +19,44 @@ if [ $# -eq 2 ]; then
 elif [ $# -eq 1 ]; then
     jdk_tag=$1
     src_zip=${PWD}/${jdk_tag}.src.zip
-    url=http://hg.openjdk.java.net/jdk/jdk${JDK_VERSION}/archive/${jdk_tag}.zip/src/
+    if [[ $jdk_tag =~ ^jdk-([0-9]+)(\.[0-9]+\.[0-9]+)?(\+([0-9]+))$ ]]; then
+        MAJOR_VERSION=${BASH_REMATCH[1]}
+        MINOR_UPDATE=${BASH_REMATCH[2]}
+        if [ -n "${MINOR_UPDATE}" ]; then
+            REPO=jdk${MAJOR_VERSION}u
+        else
+            REPO=jdk${MAJOR_VERSION}
+        fi
+        TOP_ARCHIVE_DIR=${REPO}-${jdk_tag/+/-}
+        url=https://github.com/openjdk/${REPO}/archive/refs/tags/${jdk_tag}.zip
+    else
+        echo "JDK tag does not match expected pattern: $jdk_tag"
+        echo "Expected pattern: jdk-<major>[.<minor>.<update>][+<build>]"
+        exit 1
+    fi
     if [ ! -e downloaded-${jdk_tag}.zip ]; then
         echo "Downloading $url"
-        if type -p curl >/dev/null ; then
-            curl -o downloaded-${jdk_tag}.zip $url
-        elif type -p wget >/dev/null ; then
+        if type -p wget >/dev/null ; then
             wget -O downloaded-${jdk_tag}.zip $url
+        elif type -p curl >/dev/null ; then
+            curl -o downloaded-${jdk_tag}.zip $url
         else
-            "Neither wget nor curl are available"
+            echo "Neither wget nor curl are available"
             exit 1
         fi
     fi
-    if [ -e downloaded-${jdk_tag} ]; then
-        echo "Removing downloaded-${jdk_tag} ..."
-        rm -rf downloaded-${jdk_tag}
-    fi
     echo "Unzipping downloaded-${jdk_tag}.zip ..."
-    unzip -q downloaded-${jdk_tag}.zip "jdk${JDK_VERSION}-${jdk_tag}/src/*"
-    jdk_root=${PWD}/jdk${JDK_VERSION}-${jdk_tag}
+    unzip -q downloaded-${jdk_tag}.zip "${TOP_ARCHIVE_DIR}/src/*"
+    jdk_root=${PWD}/${TOP_ARCHIVE_DIR}
 else
     echo "Usage: $0 <path to JDK repo> <path to zipfile>"
-    echo "   or: $0 <tag at http://hg.openjdk.java.net/jdk/jdk\${JDK_VERSION}>"
+    echo "   or: $0 <tag at https://github.com/openjdk/jdk${JDK_VERSION}u/archive/refs/tags/jdk-${JDK_VERSION}.zip>"
     echo ""
     echo "Examples:"
     echo "  $0 ~/closed/jdk8u251 jdk8u251.src.zip"
     echo "  $0 ~/jdk-jdk/open jdk-snapshot.src.zip"
-    echo "  $0 jdk-13+21"
-    echo "  env JDK_VERSION=13 $0 jdk-13+25"
+    echo "  $0 13+21"
+    echo "  $0 jdk-13+25"
     exit 1;
 fi
 
@@ -76,8 +87,8 @@ DIR="$( cd -P "$( dirname "$source" )" && pwd )"
 python ${DIR}/${archive_py} ${archive_py_args}
 
 if [ $# -eq 1 ]; then
-    echo "Removing jdk-${jdk_tag} ..."
-    rm -rf jdk-${jdk_tag}
+    echo "Removing ${TOP_ARCHIVE_DIR} ..."
+    rm -rf ${TOP_ARCHIVE_DIR}
 fi
 
 echo "Created ${src_zip}"
